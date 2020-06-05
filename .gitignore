@@ -1,0 +1,5 @@
+/api/__pycache__
+/auth_boiler/__pycache__
+/catalog/__pycache__
+/catalog/migrations
+/db.sqlite3
