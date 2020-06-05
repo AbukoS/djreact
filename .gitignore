@@ -3,3 +3,4 @@
 /catalog/__pycache__
 /catalog/migrations
 /db.sqlite3
+/static
