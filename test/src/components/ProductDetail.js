@@ -19,6 +19,8 @@ import {
 } from "semantic-ui-react";
 import { productDetailUrl, addToCartUrl } from "../Constants";
 import { authAxios } from "../utils";
+import { connect } from "react-redux";
+import { Redirect } from "react-router-dom";
 
 class ProductDetail extends Component {
   state = {
@@ -56,14 +58,18 @@ class ProductDetail extends Component {
   handleAddToCart = (slug) => {
     const { formData } = this.state;
     const variations = this.handleFormatData(formData);
-    authAxios
-      .post(addToCartUrl, { slug, variations })
-      .then((res) => {
-        this.setState({ loading: false });
-      })
-      .catch((err) => {
-        this.setState({ error: err, loading: false });
-      });
+    {
+      this.props.authenticated
+        ? authAxios
+            .post(addToCartUrl, { slug, variations })
+            .then((res) => {
+              this.setState({ loading: false });
+            })
+            .catch((err) => {
+              this.setState({ error: err, loading: false });
+            })
+        : window.location.replace("/login");
+    }
   };
 
   handleFethItem = () => {
@@ -74,7 +80,6 @@ class ProductDetail extends Component {
     axios
       .get(productDetailUrl(params.id))
       .then((res) => {
-        console.log(res.data);
         this.setState({ data: res.data, loading: false });
       })
       .catch((err) => {
@@ -82,7 +87,6 @@ class ProductDetail extends Component {
       });
   };
   render() {
-    console.log(this.props);
     const { data, loading, error, formVisible, formData } = this.state;
     const item = data;
     return (
@@ -98,8 +102,8 @@ class ProductDetail extends Component {
         {error && (
           <Message
             error
-            header="There was some errors with your submission"
-            list={JSON.stringify(error.message)}
+            header="There was an error"
+            list={[JSON.stringify(error)]}
           />
         )}
         <Grid columns={2} divided>
@@ -153,7 +157,7 @@ class ProductDetail extends Component {
                       })}
                     </Form.Field>
                     <Form.Button
-                    fluid
+                      fluid
                       primary
                       onClick={() => {
                         this.handleAddToCart(item.slug);
@@ -191,10 +195,15 @@ class ProductDetail extends Component {
             </Grid.Column>
           </Grid.Row>
         </Grid>
-        );
       </Container>
     );
   }
 }
 
-export default ProductDetail;
+const mapStateToProps = (state) => {
+  return {
+    authenticated: state.token !== null,
+  };
+};
+
+export default connect(mapStateToProps)(ProductDetail);
